@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from datetime import datetime
 
 # np.random.seed(42)
+np.random.seed()
 
 
 def euclidean_distance(x1, x2):
@@ -109,7 +111,7 @@ if __name__ == "__main__":
     # from sklearn.datasets import make_blobs
 
     # X, y = make_blobs(
-    #     centers=5, n_samples=500, n_features=2, shuffle=True, random_state=40
+    #     centers=5, n_samples=1000, n_features=2, shuffle=True, random_state=40
     # )
 
     # clusters = len(np.unique(y))
@@ -135,5 +137,5 @@ if __name__ == "__main__":
 
     npDataSet = np.asarray(dataset, dtype=list)
 
-    k = KMeans(K=20, max_iters=100, plot_steps=True)
+    k = KMeans(K=12, max_iters=100, plot_steps=True)
     y_pred = k.predict(npDataSet)
