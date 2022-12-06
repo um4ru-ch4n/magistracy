@@ -12,7 +12,6 @@ sklearn = "*"
 scikit-learn = "*"
 
 [dev-packages]
-ipykernel = "*"
 
 [requires]
 python_version = "3.9"

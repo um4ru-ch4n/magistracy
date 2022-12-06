@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package clock_service;
+
+option go_package = "github.com/um4ru-ch4n/magistracy/MultiAgentSystems/lab4/clock/pkg/api/clock-service;clock_service";
+
+import "google/protobuf/empty.proto";
+
+service ClockService {
+  rpc Spectate (google.protobuf.Empty) returns (google.protobuf.Empty) {
+  }
+}
