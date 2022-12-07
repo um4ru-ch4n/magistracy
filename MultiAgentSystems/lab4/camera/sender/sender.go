@@ -27,6 +27,11 @@ func Send(ctx context.Context, ch *amqp.Channel) error {
 	defer cancel()
 
 	for i := 0; i < 1000000; i++ {
+		// select {
+		// case <-ctx.Done():
+		// 	return nil
+		// default:
+		// }
 		data := contracts.FrameSending{
 			ID:        uint64(i),
 			FrameData: []byte(fmt.Sprintf("Frame data: %d", i)),
