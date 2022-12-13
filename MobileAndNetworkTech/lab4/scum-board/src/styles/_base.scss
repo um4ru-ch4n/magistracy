@@ -13,7 +13,8 @@ body {
 p,
 ul,
 li,
-h1 {
+h1,
+h3 {
     margin: 0;
     padding: 0;
 }
@@ -27,7 +28,7 @@ a {
     max-width: $wrapperWidth;
     min-height: 100vh;
     margin: 0 auto;
-    background-color: #1F1F1F;
+    background-color: #ccc;
 }
 
 .content {
@@ -40,4 +41,5 @@ a {
     max-width: $containerWidth;
     margin: auto;
     padding: 0 1rem;
+    background-color: #aaa;
 }
