@@ -58,7 +58,7 @@ export const validate = (req, res, ctx) => {
     const headers = req.headers;
     const token = headers.get('Authorization');
 
-    if (doesTokenExists(token).username === undefined) {
+    if (DoesTokenExists(token).username === undefined) {
         return res(
             ctx.status(401),
         )
@@ -89,7 +89,7 @@ const getUserByUsernamePassword = (username, password) => {
     return {};
 }
 
-const doesTokenExists = (token) => {
+export const DoesTokenExists = (token) => {
     for (var i = 0; i < USERS.length; i++) {
         if (token === ('Bearer token_' + USERS[i].username + '_' + USERS[i].password)) {
             return USERS[i];

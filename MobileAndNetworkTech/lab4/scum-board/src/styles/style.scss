@@ -4,3 +4,9 @@
 @import "base";
 
 @import "./header.scss";
+
+.current-board {
+    display: flex;
+    justify-content: center;
+    min-height: 45rem;
+}

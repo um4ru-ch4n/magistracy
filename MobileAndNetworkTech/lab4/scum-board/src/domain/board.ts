@@ -12,6 +12,7 @@ export type Column = {
 export type Card = {
     cardID: number;
     columnID: number;
+    order: number;
     name: string;
     description: string;
 }
@@ -20,11 +21,11 @@ export type ColumnFull = {
     columnID: number;
     boardID: number;
     name: string;
-    cards: Map<number, Card>;
+    cards: Card[];
 }
 
 export type BoardFull = {
     boardID: number;
     name: string;
-    columns: Map<number, ColumnFull>;
+    columns: ColumnFull[];
 }
