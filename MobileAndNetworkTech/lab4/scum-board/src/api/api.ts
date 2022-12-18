@@ -6,7 +6,7 @@ export const axiosInstance = (withAuth: boolean = false): AxiosInstance => {
     if (withAuth) {
         return axios.create({
             baseURL: cfg.apiURI,
-            timeout: 1000,
+            timeout: 5000,
             headers: {
                 'Authorization': GetToken(),
             }
@@ -15,6 +15,6 @@ export const axiosInstance = (withAuth: boolean = false): AxiosInstance => {
 
     return axios.create({
         baseURL: cfg.apiURI,
-        timeout: 1000,
+        timeout: 5000,
     })
 }

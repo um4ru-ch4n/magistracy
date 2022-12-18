@@ -7,6 +7,7 @@ export type Column = {
     columnID: number;
     boardID: number;
     name: string;
+    order: number;
 }
 
 export type Card = {
@@ -21,6 +22,7 @@ export type ColumnFull = {
     columnID: number;
     boardID: number;
     name: string;
+    order: number;
     cards: Card[];
 }
 

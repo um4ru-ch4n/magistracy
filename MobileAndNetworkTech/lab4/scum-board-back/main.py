@@ -16,7 +16,7 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 url = os.environ.get("DATABASE_URL")  # gets variables from environment
 connection = psycopg2.connect(
-    "dbname='db_scum_board' user='postgres' host='172.19.0.3' password='postgres' port='5432'")
+    "dbname='db_scum_board' user='postgres' host='172.19.0.2' password='postgres' port='5432'")
 
 
 @app.post("/auth/register")
@@ -60,7 +60,7 @@ def login():
             encoded_jwt = jwt.encode(
                 {"userID": user_ids[0][0], "username": data["username"]}, JWT_SECRET, algorithm="HS256")
 
-            return {"token": encoded_jwt}, 200
+            return {"token": "Bearer " + encoded_jwt}, 200
 
 
 @app.get("/auth/validate")
@@ -217,7 +217,8 @@ def getBoard(boardID):
                            column_order,
                            name
                     FROM columns
-                    WHERE board_id = %s;
+                    WHERE board_id = %s
+                    ORDER BY column_order ASC;
                 ''', (boardID, ))
 
             columns = cursor.fetchall()
@@ -247,7 +248,8 @@ def getBoard(boardID):
                            name,
                            description
                     FROM cards
-                    WHERE column_id = ANY(%s);
+                    WHERE column_id = ANY(%s)
+                    ORDER BY card_order ASC;
                 ''', (lst2pgarr(columnIDs), ))
 
             cards = cursor.fetchall()
@@ -261,7 +263,7 @@ def getBoard(boardID):
                     resCards[card[1]] = []
 
                 resCards[card[1]].append({
-                    "cardId": card[0],
+                    "cardID": card[0],
                     "columnID": card[1],
                     "order": card[2],
                     "name": card[3],
@@ -300,6 +302,8 @@ def upsertCards():
                     WHERE column_id = %s;
                 ''', (data["columnID"], ))
 
+            if len(data["cards"]) == 0:
+                return {"cards": []}, 200
 
             d = multipleCardsInsert(data["cards"], data["columnID"])
             query = "INSERT INTO cards (column_id, card_order, name, description) VALUES " + d + ' RETURNING card_id, column_id, card_order, name, description;'
@@ -346,7 +350,6 @@ def upsertColumns():
     if "columns" not in data or "boardID" not in data:
         return {"error": "some of required fields are omitted"}, 400
 
-    resColumns = []
     with connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -357,30 +360,149 @@ def upsertColumns():
 
 
             d = multipleColumnsInsert(data["columns"], data["boardID"])
-            query = "INSERT INTO columns (board_id, name, column_order) VALUES " + d + ' RETURNING column_id, board_id, name, column_order;'
+            query = "INSERT INTO columns (board_id, name, column_order) VALUES " + d + ';'
 
             cursor.execute(query, ())
-
-            columns = cursor.fetchall()
-
-            for card in columns:
-                resColumns.append({
-                    "columnID": card[0],
-                    "boardID": card[1],
-                    "name": card[2],
-                    "order": card[3]
-                })
     
-    return {"columns": resColumns}
+    return {}, 204
+
+@app.patch("/board/column/name")
+def renameColumn():
+    auth_header = request.headers.get('Authorization')
+
+    _, status = checkAuth(auth_header)
+    if status != 200:
+        return {}, 401
+
+    data = request.get_json()
+
+    if "name" not in data or "columnID" not in data:
+        return {"error": "some of required fields are omitted"}, 400
+
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                '''
+                    UPDATE columns
+                    SET name = %s
+                    WHERE column_id = %s;
+                ''', (data["name"], data["columnID"], ))
+    
+    return {}, 204
 
 def multipleColumnsInsert(columns, boardID):
     values = []
 
     for i in range(len(columns)):
         if i == len(columns) - 1:
-            values.append("({}, \'{}\', {})".format(boardID, columns[i]["columnName"], columns[i]["order"]))
+            values.append("({}, \'{}\', {})".format(boardID, columns[i]["name"], columns[i]["order"]))
             continue
 
-        values.append("({}, \'{}\', {}), ".format(boardID, columns[i]["columnName"], columns[i]["order"]))
+        values.append("({}, \'{}\', {}), ".format(boardID, columns[i]["name"], columns[i]["order"]))
 
     return "".join(values)
+
+@app.delete("/board/column/<columnID>")
+def deleteColumn(columnID):
+    auth_header = request.headers.get('Authorization')
+
+    _, status = checkAuth(auth_header)
+    if status != 200:
+        return {}, 401
+
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                '''
+                    DELETE FROM cards
+                    WHERE column_id = %s;
+                ''', (columnID, ))
+            
+            cursor.execute(
+                '''
+                    DELETE FROM columns
+                    WHERE column_id = %s;
+                ''', (columnID, ))
+    
+    return {}, 204
+
+@app.post("/board/column")
+def createColumn():
+    auth_header = request.headers.get('Authorization')
+
+    _, status = checkAuth(auth_header)
+    if status != 200:
+        return {}, 401
+
+    data = request.get_json()
+
+    if "boardID" not in data or "name" not in data or "order" not in data:
+        return {"error": "some of required fields are omitted"}, 400
+
+    if len(data["name"]) < 1:
+        return {"error": "column name length must be at least 1 symbol"}
+
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                '''
+                    SELECT column_id, column_order
+                    FROM columns
+                    WHERE column_order >= %s;
+                ''', (data["order"], ))
+
+            for column in cursor.fetchall():
+                cursor.execute(
+                    '''
+                        UPDATE columns
+                        SET column_order = %s
+                        WHERE column_id = %s;
+                    ''', (column[1]+1, column[0], ))
+
+            cursor.execute(
+                '''
+                    INSERT INTO columns (board_id, name, column_order)
+                    VALUES (%s, %s, %s);
+                ''', (data["boardID"], data["name"], data["order"] ))
+    
+    return {}, 204
+
+@app.delete("/board/<boardID>")
+def deleteBoard(boardID):
+    auth_header = request.headers.get('Authorization')
+
+    _, status = checkAuth(auth_header)
+    if status != 200:
+        return {}, 401
+
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                '''
+                    DELETE FROM cards
+                    WHERE column_id = ANY(
+                        SELECT column_id
+                        FROM columns
+                        WHERE board_id = %s
+                    );
+                ''', (boardID, ))
+            
+            cursor.execute(
+                '''
+                    DELETE FROM columns
+                    WHERE board_id = %s;
+                ''', (boardID, ))
+            
+            cursor.execute(
+                '''
+                    DELETE FROM users_boards
+                    WHERE board_id = %s;
+                ''', (boardID, ))
+
+            cursor.execute(
+                '''
+                    DELETE FROM boards
+                    WHERE board_id = %s;
+                ''', (boardID, ))
+    
+    return {}, 204

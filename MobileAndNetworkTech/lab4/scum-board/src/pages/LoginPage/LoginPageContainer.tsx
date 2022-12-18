@@ -39,7 +39,7 @@ export const LoginPage: React.FC = () => {
             .catch(err => {
                 setState(prev => ({
                     ...prev,
-                    signUpError: err.response.data.error,
+                    signUpError: err.message,
                 }));
             })
             .finally(() => {
