@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package employee;
+
+option go_package = "employee";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service EmployeeService {
+    rpc GetEmployee (GetEmployeeRequest) returns (GetEmployeeResponse) {
+        option (google.api.http) = {
+            get: "/employee/{login}"
+        };
+    }
+
+    rpc GetEmployeeList (GetEmployeeListRequest) returns (GetEmployeeListResponse) {
+        option (google.api.http) = {
+            get: "/employee"
+        };
+    }
+
+    rpc UpdateEmployee (UpdateEmployeeRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/employee/{login}"
+            body: "*"
+        };
+    }
+
+    rpc DeleteEmployee (DeleteEmployeeRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/employee/{login}"
+        };
+    }
+}
+
+message Employee {
+    string login = 2;
+    string name = 3;
+    string surname = 4;
+    string patronymic = 5;
+    string birthday = 6;
+    string phone = 7;
+    string mainLan = 8;
+    int32 positionID = 9;
+    string positionName = 10;
+    int32 orgStructureID = 11;
+    string orgStructureName = 12;
+}
+
+message GetEmployeeRequest {
+    string login = 1;
+}
+
+message GetEmployeeResponse {
+    Employee employee = 1;
+}
+
+message GetEmployeeListRequest {
+    int32 page_size = 1;
+    int32 page_token = 2;
+}
+
+message GetEmployeeListResponse {
+    repeated Employee employees = 1;
+    int32 total_size = 2;
+    string next_page_token = 3;
+}
+
+message UpdateEmployeeRequest {
+    Employee employee = 1;
+}
+
+message DeleteEmployeeRequest {
+    string login = 1;
+}

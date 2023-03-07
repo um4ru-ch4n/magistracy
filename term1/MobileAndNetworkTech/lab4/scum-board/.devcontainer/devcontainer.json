@@ -1,0 +1,10 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
+    "containerEnv": {
+        "REACT_APP_BACK_HOSTNAME": "localhost:5000",
+        "REACT_APP_USE_MOCKS": "false"
+    },
+    "forwardPorts": [
+        3000
+    ]
+}

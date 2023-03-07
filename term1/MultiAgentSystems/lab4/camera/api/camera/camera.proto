@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package camera_service;
+
+option go_package = "github.com/um4ru-ch4n/magistracy/MultiAgentSystems/lab4/camera/pkg/api/camera-service;camera_service";
+
+import "google/protobuf/empty.proto";
+
+service CameraService {
+  rpc Spectate (google.protobuf.Empty) returns (google.protobuf.Empty) {
+  }
+}

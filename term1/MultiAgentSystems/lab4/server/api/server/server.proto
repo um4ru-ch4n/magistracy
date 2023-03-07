@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package server_service;
+
+option go_package = "github.com/um4ru-ch4n/magistracy/MultiAgentSystems/lab4/server/pkg/api/server-service;server_service";
+
+import "google/protobuf/empty.proto";
+
+service ServerService {
+  rpc Auth (AuthRequest) returns (AuthResponse) {
+  }
+
+  rpc StartProcess (StartProcessRequest) returns (stream StartProcessResponse) {
+  }
+}
+
+message AuthRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  string token = 1;
+}
+
+message StartProcessRequest {
+  int32 processID = 1;
+}
+
+enum Status {
+  Unknown = 0;
+  GOOD = 1;
+  NORMAL = 2;
+  BAD = 3;
+}
+
+message StartProcessResponse {
+  message CameraMetrics {
+    Status status = 1;
+  }
+  message ClockMetrics {
+    message Pulse {
+      Status status = 1;
+      uint32 value = 2;
+    }
+    message Temperature {
+      Status status = 1;
+      float value = 2;
+    }
+    message Oxygen {
+      Status status = 1;
+      float value = 2;
+    }
+
+    Pulse pulse = 1;
+    Temperature temperature = 2;
+    Oxygen oxygen = 3;
+  }
+  
+  CameraMetrics cameraMetrics = 1;
+  ClockMetrics clockMetrics = 2;
+}
